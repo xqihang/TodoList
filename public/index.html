@@ -25,16 +25,14 @@
 	    	</span>
 	    </div>
 
-	    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg">
-	    
-	    </div>
+	    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg"></div>
 
 	    <div class="list-group mt20">
 	    	<h4 ng-if="tasks.length>0">任务列表：未完成</h4>
 	    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
-	    		{{task}}
-	    		<span class="set-btn pull-right text-success" ng-click="complete($index)">完成</span>
-	    		<span class="set-btn pull-right text-danger" ng-click="del($index)">删除</span>
+	    		<span ng-bind="task"></span>
+	    		<span class="set-btn pull-right text-success" ng-click="complete($index)"><i class="glyphicon glyphicon-ok"></i> 完成</span>
+	    		<span class="set-btn pull-right text-danger" ng-click="del($index)"><i class="glyphicon glyphicon-remove-circle"></i> 删除</span>
 	    	</a>
 	    </div>
 
