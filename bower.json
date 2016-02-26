@@ -1,0 +1,26 @@
+{
+  "name": "angular",
+  "description": "learn angular.js case",
+  "main": "index.html",
+  "moduleType": [],
+  "keywords": [
+    "angular"
+  ],
+  "authors": [
+    "freelion"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.5.0",
+    "bootstrap": "^3.3.6"
+  }
+}

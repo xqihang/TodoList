@@ -1,0 +1,25 @@
+{
+  "name": "todolist",
+  "version": "1.0.0",
+  "description": "This is a simple ToDoList system.",
+  "main": "./bin/www",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xqihang/todolist.git"
+  },
+  "keywords": [
+    "ToDoList"
+  ],
+  "author": "freelion",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xqihang/todolist/issues"
+  },
+  "homepage": "https://github.com/xqihang/todolist#readme",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}

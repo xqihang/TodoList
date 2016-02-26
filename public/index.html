@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html ng-app="todoList">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>FreeLion - 任务系统</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="./lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+<style>
+	.mt20{margin-top:20px;}
+	.set-btn{padding: 0 10px;}
+	.msg{padding:15px;margin:10px 0;}
+</style>
+</head>
+<body>
+	<div class="container" ng-controller="taskCtrl">
+
+		<h3 class="text-center msg">任务列表系统</h3>
+	
+	    <div class="input-group mt20">
+	    	<input ng-model="task" type="text" class="form-control">
+	    	<span class="input-group-btn">
+	    		<button class="btn btn-success" ng-click="save()">提交</button>
+	    	</span>
+	    </div>
+
+	    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg">
+	    
+	    </div>
+
+	    <div class="list-group mt20">
+	    	<h4 ng-if="tasks.length>0">任务列表：未完成</h4>
+	    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
+	    		{{task}}
+	    		<span class="set-btn pull-right text-success" ng-click="complete($index)">完成</span>
+	    		<span class="set-btn pull-right text-danger" ng-click="del($index)">删除</span>
+	    	</a>
+	    </div>
+
+	    <div class="list-group mt20">
+	    	<h4 ng-if="completed.length>0">任务列表：已完成</h4>
+	    	<a href="javascript:;" class="list-group-item" ng-repeat="item in completed track by $index" ng-bind="item">
+	    	</a>
+	    </div>
+
+	    <div class="list-group mt20">
+	    	<h4 ng-if="deleted.length>0">任务列表：已删除</h4>
+	    	<a href="javascript:;" class="list-group-item" ng-repeat="item in deleted track by $index" ng-bind="item">
+	    	</a>
+	    </div>
+	
+	</div>
+
+	<script src="./lib/angular/angular.js"></script>
+	<script src="./lib/jquery/dist/jquery.js"></script>
+	<script src="./app.js"></script>
+</body>
+</html>
