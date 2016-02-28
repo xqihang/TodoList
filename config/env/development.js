@@ -1,3 +1,4 @@
 module.exports = {
-	port : 3600
+	port : 3601,
+	mongodb : 'mongodb://localhost/todolist'
 }

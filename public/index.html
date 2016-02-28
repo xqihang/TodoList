@@ -9,8 +9,9 @@
 <link href="./lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
 <style>
 	.mt20{margin-top:20px;}
-	.set-btn{padding: 0 10px;}
+	.set-btn{padding: 0 10px;margin: 0 10px;}
 	.msg{padding:15px;margin:10px 0;}
+	.tools{padding:5px 0;border-bottom: 1px solid #ccc;margin-bottom: 10px;}
 </style>
 </head>
 <body>
@@ -18,40 +19,90 @@
 
 		<h3 class="text-center msg">任务列表系统</h3>
 	
-	    <div class="input-group mt20">
-	    	<input ng-model="task" type="text" class="form-control">
-	    	<span class="input-group-btn">
-	    		<button class="btn btn-success" ng-click="save()">提交</button>
-	    	</span>
-	    </div>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="form-group mt20">
+			    	<input ng-model="task.title" type="text" class="form-control" placeholder="任务标题">
+			    </div>
+			    <div class="form-group">
+			    	<textarea ng-model="task.content" type="text" class="form-control" rows="3" cols="8" placeholder="任务内容"></textarea>
+			    </div>
+			    <div class="form-group">
+			    	<button class="btn btn-block btn-success" ng-click="save()">提交</button>
+			    </div>
+			    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg"></div>
+			</div>
 
-	    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg"></div>
+			<div class="col-md-6">
+				<div class="list-group mt20">
+			    	<h4 ng-if="tasks.length>0">任务列表：全部</h4>
+			    	<div class="tools">
+				    	<button ng-click="selectedAll('all')">全选</button>
+				    	<button ng-click="selectedAll('reverse')">反选</button>
+				    	<button ng-click="selectedAll('zero')">不选</button>
+				    </div>
+			    	
+			    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
+			    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
+			    		<span ng-bind="task.title || '没有填写标题。。。'"></span>
 
-	    <div class="list-group mt20">
-	    	<h4 ng-if="tasks.length>0">任务列表：未完成</h4>
-	    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
-	    		<span ng-bind="task"></span>
-	    		<span class="set-btn pull-right text-success" ng-click="complete($index)"><i class="glyphicon glyphicon-ok"></i> 完成</span>
-	    		<span class="set-btn pull-right text-danger" ng-click="del($index)"><i class="glyphicon glyphicon-remove-circle"></i> 删除</span>
-	    	</a>
-	    </div>
+			    		<button data-toggle="tooltip" data-placement="top" title="完成" class="btn set-btn pull-right btn-success" ng-click="setStatus( {id : task._id, status : 'complete'} )" ng-disabled="task.status != 'default'">
+			    			<i class="glyphicon glyphicon-ok"></i>
+			    		</button>
 
-	    <div class="list-group mt20">
-	    	<h4 ng-if="completed.length>0">任务列表：已完成</h4>
-	    	<a href="javascript:;" class="list-group-item" ng-repeat="item in completed track by $index" ng-bind="item">
-	    	</a>
-	    </div>
+			    		<button data-toggle="tooltip" data-placement="top" title="放入回收站" class="btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'default'">
+			    			<i class="glyphicon glyphicon-trash"></i>
+			    		</button>
 
-	    <div class="list-group mt20">
-	    	<h4 ng-if="deleted.length>0">任务列表：已删除</h4>
-	    	<a href="javascript:;" class="list-group-item" ng-repeat="item in deleted track by $index" ng-bind="item">
-	    	</a>
-	    </div>
+			    		<button data-toggle="tooltip" data-placement="top" title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+			    	</a>
+			    </div>
+
+			    <div class="list-group mt20">
+			    	<h4 ng-if="countNum.completed>0">任务列表：已完成 {{countNum.completed}}</h4>
+
+			    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'complete'" ng-repeat="task in tasks track by $index">
+			    		
+			    		<span ng-bind="task.title || '没有填写标题。。。'"></span>
+
+			    		<button data-toggle="tooltip" data-placement="top" title="放入回收站" class="btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'complete'">
+			    			<i class="glyphicon glyphicon-trash"></i>
+			    		</button>
+
+			    		<button data-toggle="tooltip" data-placement="top" title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+			    	</a>
+			    </div>
+
+			    <div class="list-group mt20">
+			    	<h4 ng-if="countNum.deleted>0">任务列表：回收站 {{countNum.deleted}}</h4>
+			    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'delete'" ng-repeat="task in tasks track by $index">
+						
+						<span ng-bind="task.title || '没有填写标题。。。'"></span>
+						
+			    		<button data-toggle="tooltip" data-placement="top" title="彻底删除" class="btn set-btn pull-right btn-danger" ng-click="remove( task._id )">
+			    			<i class="glyphicon glyphicon-remove"></i>
+			    		</button>
+
+			    		<button data-toggle="tooltip" data-placement="top" title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+			    	</a>	    	
+			    </div>
+			</div>
+
+		</div>
 	
 	</div>
 
 	<script src="./lib/angular/angular.js"></script>
 	<script src="./lib/jquery/dist/jquery.js"></script>
+	<script src="./lib/bootstrap/dist/js/bootstrap.js"></script>
 	<script src="./app.js"></script>
+	<script src="./service/todo.client.service.js"></script>
+	<script src="./controllers/todo.client.controller.js"></script>
 </body>
 </html>
