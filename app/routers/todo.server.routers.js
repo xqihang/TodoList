@@ -15,6 +15,9 @@ module.exports = function(app){
 	app.route('/remove/:id')
 	.get( TaskController.remove );
 
+	app.route('/show/:id')
+	.get( TaskController.show );
+
 	app.param('id', TaskController.getById );
 	app.param('status', TaskController.getByStatus );
 }

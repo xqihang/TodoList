@@ -4,7 +4,7 @@ angular.module('todoList')
 
 function TaskService($http, $q){
 
-	function handleRequest(method, url, data, callback){
+	function handleRequest(method, url, data){
 
 		var defered = $q.defer();
 
@@ -19,13 +19,11 @@ function TaskService($http, $q){
 			config.params = data;
 		}
 
-		$http( config ).success(function(data){
+		$http( config, { cache: true } ).success(function(data){
 			defered.resolve(data);
 		}).error(function(err){
 			defered.reject(err);
 		});
-
-		callback && callback();
 
 		return defered.promise;
 	}
@@ -35,13 +33,16 @@ function TaskService($http, $q){
 			return handleRequest('GET', '/list', param);
 		},
 		add : function( data, callback ){
-			return handleRequest('POST', '/add', data, callback);
+			return handleRequest('POST', '/add', data);
 		},
 		setStatus : function(data, callback){
-			return handleRequest('GET', '/set/'+ data.id + '/' + data.status, callback);
+			return handleRequest('GET', '/set/'+ data.id + '/' + data.status);
 		},
 		remove : function(id){
 			return handleRequest('GET','/remove/' + id);
+		},
+		show : function(id){
+			return handleRequest('GET','/show/' + id);
 		}
 	}
 

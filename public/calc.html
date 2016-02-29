@@ -1,0 +1,82 @@
+<html>
+	<head>
+		<title>收益计算器</title>
+		<link rel="stylesheet" href="http://www.freelion.me/assets/lib/bootstrap-3.3.5/css/bootstrap.min.css">
+		<style>
+			.mt20{margin-top: 20px;}
+		</style>
+		<script src="http://www.freelion.me/assets/lib/angular/angular.js"></script>
+	</head>
+	<body ng-app="app">
+		<div class="container">
+			<div class="row" ng-controller="calc">
+				<p class="mt20">收益 = 本金 * 年利率 / 365 * 天数</p>
+				<div class="input-group mt20">
+					<input class="form-control" type="number" step="1000" ng-model="capital">
+					<span class="input-group-addon">本金( n )</span>
+				</div>
+				<div class="input-group mt20">
+					<input class="form-control" type="number" step="0.01" ng-model="interest">
+					<span class="input-group-addon">利率(%)</span>
+				</div>
+				<div class="input-group mt20">
+					<input class="form-control" type="number" min="0" ng-model="day">
+					<span class="input-group-addon">天数( d )</span>
+				</div>
+				<div class="mt20 alert alert-success">
+					收益 ：<span ng-bind="count()"></span>
+				</div>
+				<div ng-if="msg.msg.length > 0" class="mt20 alert alert-{{msg.status}}" ng-bind="msg.msg"></div>
+			</div>
+		</div>
+		
+		<script>
+			var app = angular.module('app', [] );
+
+			app.controller('calc', ['$scope', '$timeout', calc ]);
+
+			function calc($scope, $timeout) {
+				$scope.capital = 10000;
+				$scope.interest = 4.4;
+				$scope.day = 1;
+				$scope.msg = {
+					status : 'default',
+					msg : ''
+				};
+
+				function msg(status, msg){
+					return { 'status' : status + ' shake', 'msg' : msg }
+				}
+
+				$scope.count = function(){
+
+					var profit = ( $scope.capital * ( $scope.interest / 100 ) / 365 * $scope.day).toFixed(4);
+
+					if( $scope.day <= 1 ){
+						if( profit < 1 ){
+							$scope.msg = msg( 'info', '收益：' + profit + ' : < 1 | 兄台，请问你的梦想是什么～   你介意我对你心灰意冷吗？' );
+						}else if( profit <= 5 && profit >= 1 ){
+							$scope.msg = msg( 'danger', '收益：' + profit + ' : 1 ~ 5 | 兄台，收益都不够一个煎饼的哦。。。你需要多赚点钱了～' );
+						}else if( profit >5 && profit <= 500 ){
+							$scope.msg = msg( 'warning', '收益：' + profit + ' : 5～500 |  兄台，收益还不错嘛～');
+						}else{
+							$scope.msg = msg( 'success', '收益：' + profit + ' : > 500 |  地球人已经没法阻挡你的土豪气质了～' )
+						}
+					}else if( $scope.day > 1 && $scope.day <= 365 * 3 ){
+						if( profit <= 100 ){
+							$scope.msg = msg( 'danger', '收益：' + profit + ' : <= 100 | 兄台，一百块都不给你的哦。。。你需要多赚点钱了～' );
+						}else if( profit >100 && profit <= 10000 ){
+							$scope.msg = msg( 'warning', '收益：' + profit + ' : 100 ~ 10000 | 兄台，收益还不错嘛～');
+						}else{
+							$scope.msg = msg( 'success', '收益：' + profit + ' : > 10000 | 地球人已经没法阻挡你的土豪气质了～' );
+						}
+					}else{
+						$scope.msg = msg( 'danger', '兄台，存这么久（ 三年以上 ），你选择的平台靠谱吗？' );
+					}
+
+					return profit;
+				}
+			}
+		</script>
+	</body>
+</html>

@@ -92,6 +92,23 @@ module.exports = {
 
 			return res.send( sendMsg('remove', 1, '已从数据库删除成功') )
 		})
+	},
+	show : function(req, res, next){
+		var id = req.task._id;
+
+		if( id == '' ){
+			return next( new Error('Parameter is missing') );
+		}
+
+		Task
+		.findById(id)
+		.exec(function(err, result){
+			if(err){
+				return next(err);
+			}
+
+			return res.send( sendMsg('remove', 1, result) );
+		})
 	}
 }
 

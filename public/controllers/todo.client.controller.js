@@ -1,15 +1,17 @@
 angular.module('todoList')
-.controller('taskCtrl',['$scope', 'TaskService', TaskController]);
+.controller('taskCtrl',['$scope', '$timeout', 'TaskService', TaskController]);
 
-function TaskController($scope, TaskService){
+function TaskController($scope, $timeout, TaskService){
 
 	// 新建任务
 	$scope.task = {
 		title : '',
 		content : ''
 	};
-	// 正在进行中
+	// 全部任务
 	$scope.tasks = [];
+	// 未完成
+	$scope.defaulted = [];
 	// 完成列表
 	$scope.completed = [];
 	// 已删除列表
@@ -23,8 +25,22 @@ function TaskController($scope, TaskService){
 	// 统计
 	$scope.countNum = {
 		completed : 0,
-		deleted : 0
+		deleted : 0,
+		defaulted : 0
 	}
+	// 当前正在查看的某一条
+	$scope.current = {};
+
+	$scope.safeApply = function(fn) {
+		var phase = this.$root.$$phase;
+		if(phase == '$apply' || phase == '$digest') {
+			if(fn && (typeof(fn) === 'function')) {
+				fn();
+			}
+		}else {
+			this.$apply(fn);
+		}
+	};
 
 	function msg( status, msg ){
 
@@ -64,11 +80,8 @@ function TaskController($scope, TaskService){
 			deadline : new Date().setDate(new Date().getDate()+5)
 		}
 
-		// 插入队列
-		TaskService.add( task, function(){
-			// 打印消息
-			msg( 'success', '任务 [ '+ $scope.task.title +' ] 创建成功...' );
-		});
+		// 插入数据库
+		TaskService.add( task );
 		// input置为空
 		$scope.task = {
 			title : '',
@@ -81,10 +94,9 @@ function TaskController($scope, TaskService){
 		$('[data-toggle="tooltip"]').tooltip('hide');
 
 		// 插入成功队列
-		TaskService.setStatus(param, function(){
-			// 打印消息
-			msg( 'success', '任务 '+ param.id +' : 已完成 ...' );
-		});
+		TaskService.setStatus( param );
+
+		$scope.getList();
 	};
 
 	$scope.remove = function(id){
@@ -99,7 +111,6 @@ function TaskController($scope, TaskService){
 		for(var i = 0; i < $scope.tasks.length; i++){
 			switch( method ){
 				case 'all':
-
 					$scope.tasks[i].checked = true;
 					break;
 				case 'reverse':
@@ -115,6 +126,7 @@ function TaskController($scope, TaskService){
 		
 		$scope.countNum.completed = 0;
 		$scope.countNum.deleted = 0;
+		$scope.countNum.defaulted = 0;
 		
 		for(var i = 0; i < $scope.tasks.length; i++){
 			switch( $scope.tasks[i].status  ){
@@ -124,9 +136,33 @@ function TaskController($scope, TaskService){
 				case 'delete':
 					$scope.countNum.deleted += 1;
 					break;
+				case 'default':
+					$scope.countNum.defaulted += 1;
 			}
 		}
 	};
+
+
+	$scope.formatTime = function(date){
+
+		console.log(date);
+		var time = moment(date).format('YYYY-MM-DD');
+		return time;
+	}
+
+	$scope.openDetail = function(id){
+		$scope.showTask(id);
+		$('#modal-detail').modal('show');
+	}
+
+	$scope.showTask = function(id){
+		
+		TaskService.show(id).then(function(data){
+			$scope.current = data.res;
+		},function(err){
+			console.log(err);
+		});
+	}
 
 	// 单条 是否选中
 	$scope.isSelect = function( $event ){
@@ -134,11 +170,11 @@ function TaskController($scope, TaskService){
 		$scope.checked = checkBox.checked ? true : false;
 	}
 
-	$scope.$watch('tasks', function(){
-		$scope.count();
-		$scope.getList();
+	$scope.$watch('tasks',function(newValue,oldValue, scope){
+
+	    $scope.count();
+
 	});
 
 	$scope.getList();
-	$('[data-toggle="tooltip"]').tooltip();
 }
