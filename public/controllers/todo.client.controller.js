@@ -1,7 +1,7 @@
 angular.module('todoList')
-.controller('taskCtrl',['$scope', '$timeout', 'TaskService', TaskController]);
+.controller('taskCtrl',['$scope', '$interval', 'TaskService', TaskController]);
 
-function TaskController($scope, $timeout, TaskService){
+function TaskController($scope, $interval, TaskService){
 
 	// 新建任务
 	$scope.task = {
@@ -20,27 +20,18 @@ function TaskController($scope, $timeout, TaskService){
 	$scope.Msg = {status:'success', msg:''};
 	// 消息队列 备用
 	$scope.ArrMsg = [];
-	// 是否全选
-	$scope.isSelectedAll = false;
+	// 倒计时
+	$scope.countTime = { d : 0, h : 0, m : 0, s : 0 };
+
 	// 统计
 	$scope.countNum = {
 		completed : 0,
 		deleted : 0,
-		defaulted : 0
+		defaulted : 0,
+		selected : 0
 	}
 	// 当前正在查看的某一条
 	$scope.current = {};
-
-	$scope.safeApply = function(fn) {
-		var phase = this.$root.$$phase;
-		if(phase == '$apply' || phase == '$digest') {
-			if(fn && (typeof(fn) === 'function')) {
-				fn();
-			}
-		}else {
-			this.$apply(fn);
-		}
-	};
 
 	function msg( status, msg ){
 
@@ -57,12 +48,40 @@ function TaskController($scope, $timeout, TaskService){
 		console.log( message );
 	}
 
+	function refreshWin(){
+		window.location.reload();
+	}
+
+	function countDown( nextDate ){
+
+		var now = new Date().getTime();
+		var next = new Date(nextDate).getTime();
+
+		var t = Math.abs( parseInt( (next - now) / 1000) );
+
+		var d = Math.floor(t / 60 / 60 / 24);
+	    var h = Math.floor(t / 60 / 60 % 24);
+	    var m = Math.floor(t / 60 % 60);
+	    var s = Math.floor(t % 60);
+
+		$scope.countTime = { d : d, h : h, m : m, s : s }
+	}
+
+	// 获取列表
 	$scope.getList = function(param){
 
 		TaskService.getList(param).then(function(data){
+
 			$scope.tasks = data.res;
+
+			$scope.count();
+
+			for(var i = 0; i < $scope.tasks.length; i++){
+				$scope.tasks[i].checked = false;
+			}
+
 		},function(err){
-			msg( 'success', err );
+			msg( 'error', err );
 		});
 	}
 
@@ -74,10 +93,18 @@ function TaskController($scope, $timeout, TaskService){
 			return false;
 		}
 
+		var deadline = new Date( $scope.task.deadline );
+
+		if( deadline.getDate() != $scope.task.deadline.substring( $scope.task.deadline.length - 2 ) ){
+			msg( 'danger', '日期格式不正确...' );
+		}
+
+		$scope.Msg = '';
+
 		var task = {
 			title : $scope.task.title,
 			content : $scope.task.content,
-			deadline : new Date().setDate(new Date().getDate()+5)
+			deadline : new Date( $scope.task.deadline )
 		}
 
 		// 插入数据库
@@ -87,41 +114,85 @@ function TaskController($scope, $timeout, TaskService){
 			title : '',
 			content : ''
 		};
+
+		refreshWin();
 	}
 
+	// 设置服务器端状态
 	$scope.setStatus = function(param){
 
 		$('[data-toggle="tooltip"]').tooltip('hide');
 
-		// 插入成功队列
+		// 设置服务端状态
 		TaskService.setStatus( param );
-
-		$scope.getList();
+		// 更新本地状态
+		$scope.updateStatus(param);
 	};
 
-	$scope.remove = function(id){
-
-		TaskService.remove( id );
-	}
-
-
-	// 操作全部列表 选中状态 (all / reverse / zero)
-	$scope.selectedAll = function( method ){
-
+	// 更新本地状态
+	$scope.updateStatus = function(param){
 		for(var i = 0; i < $scope.tasks.length; i++){
-			switch( method ){
-				case 'all':
-					$scope.tasks[i].checked = true;
-					break;
-				case 'reverse':
-					$scope.tasks[i].checked = !$scope.tasks[i].checked;
-					break;
-				case 'zero':
-					$scope.tasks[i].checked = false;
+			if( $scope.tasks[i]._id == param.id ){
+				$scope.tasks[i].status = param.status;
+
+				$scope.count();
 			}
 		}
 	}
 
+	// 服务器端操作删除
+	$scope.remove = function(id){
+
+		TaskService.remove( id );
+
+		refreshWin();
+	};
+
+
+	// 操作全部列表 选中状态 (all / reverse / zero)
+	$scope.selectedAll = function( method, status ){
+
+		for(var i = 0; i < $scope.tasks.length; i++){
+			switch( method ){
+				case 'all':
+					$scope.countNum.selected = $scope.tasks.length;
+					$scope.tasks[i].checked = true;
+					break;
+				case 'reverse':
+					$scope.tasks[i].checked = !$scope.tasks[i].checked;
+					$scope.countNum.selected = Math.abs($scope.tasks.length - $scope.countNum.selected);
+					console.log($scope.countNum.selected);
+					break;
+				case 'zero':
+					$scope.countNum.selected = 0;
+					$scope.tasks[i].checked = false;
+					break;
+			}
+		}
+	};
+
+	// 多选设置
+	$scope.setAll = function(status){
+		for(var i = 0; i < $scope.tasks.length; i++){
+
+			if( status && ( $scope.tasks[i].checked == true ) ){
+				$scope.setStatus( {id : $scope.tasks[i]._id, status : status} );
+			}
+		}
+	}
+
+	// 多选删除
+	$scope.selectRemove = function(){
+		for(var i = 0; i < $scope.tasks.length; i++){
+
+			if( $scope.tasks[i].checked == true ){
+
+				$scope.remove( $scope.tasks[i].id );
+			}
+		}
+	}
+
+	// 本地计数
 	$scope.count = function(){
 		
 		$scope.countNum.completed = 0;
@@ -142,39 +213,48 @@ function TaskController($scope, $timeout, TaskService){
 		}
 	};
 
-
+	// 格式化日期
 	$scope.formatTime = function(date){
-
-		console.log(date);
-		var time = moment(date).format('YYYY-MM-DD');
+		var time = moment(date).format('YYYY-MM-DD hh:ss');
 		return time;
 	}
 
+	// 打开弹层
 	$scope.openDetail = function(id){
 		$scope.showTask(id);
 		$('#modal-detail').modal('show');
 	}
 
+	// 显示详细信息
 	$scope.showTask = function(id){
 		
 		TaskService.show(id).then(function(data){
 			$scope.current = data.res;
+
+			$interval( function(){
+				countDown( $scope.current.deadline )
+			}, 1000 );
+
 		},function(err){
 			console.log(err);
 		});
 	}
 
 	// 单条 是否选中
-	$scope.isSelect = function( $event ){
-		var checkBox = $event.target;
-		$scope.checked = checkBox.checked ? true : false;
+	$scope.isSelect = function( id ){
+		for(var i = 0; i < $scope.tasks.length; i++){
+			if($scope.tasks[i]._id = id){
+				$scope.checked = !$scope.checked;
+
+				if( $scope.checked == true ){
+					$scope.countNum.selected++;
+				}else{
+					$scope.countNum.selected--;
+				}
+			}
+		}
 	}
 
-	$scope.$watch('tasks',function(newValue,oldValue, scope){
-
-	    $scope.count();
-
-	});
-
+	// 初始化项目列表
 	$scope.getList();
 }

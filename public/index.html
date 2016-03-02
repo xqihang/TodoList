@@ -23,6 +23,7 @@
 			    	<div class="modal-header">
 			    		<h4 ng-bind="current.title"></h4>
 			    		<span>任务截止日期： {{formatTime(current.deadline)}}</span>
+			    		<p> <span ng-bind="countTime.d"></span> 天 <span ng-bind="countTime.h"></span> 时 <span ng-bind="countTime.m"></span> 分 <span ng-bind="countTime.s"></span> 秒 </p>
 			    	</div>
 			    	<div class="modal-body">
 			    		<p ng-bind="current.content"></p>
@@ -35,21 +36,28 @@
 	
 		<div class="row">
 			
-			<div class="form-group mt20">
-		    	<input ng-model="task.title" type="text" class="form-control" placeholder="任务标题">
+			<div class="col-md-6">
+				<div class="form-group mt20">
+			    	<input ng-model="task.title" type="text" class="form-control" placeholder="任务标题">
+			    </div>
+			</div>
+			<div class="col-md-6">
+				<div class="form-group mt20">
+			    	<input ng-model="task.deadline" type="text" class="form-control" placeholder="任务截止日期 格式如： 2015-06-02">
+			    </div>
+			</div>
+		    <div class="col-md-12">
+		    	<div class="form-group">
+			    	<textarea ng-model="task.content" type="text" class="form-control" rows="3" cols="8" placeholder="任务内容"></textarea>
+			    </div>
+			    <div class="form-group">
+			    	<button class="btn btn-block btn-success" ng-click="save()">提交</button>
+			    </div>
+			    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg"></div>
 		    </div>
-		    <div class="form-group">
-		    	<textarea ng-model="task.content" type="text" class="form-control" rows="3" cols="8" placeholder="任务内容"></textarea>
-		    </div>
-		    <div class="form-group">
-		    	<button class="btn btn-block btn-success" ng-click="save()">提交</button>
-		    </div>
-		    <div class="msg bg-{{Msg.status}}" ng-if="Msg.msg.length>0" ng-bind="Msg.msg"></div>
 
 
-			<div class="row">
-				
-				<div class="col-md-6">
+			<div class="col-md-6">
 					<div class="list-group mt20">
 				    	<h4 ng-if="tasks.length>0">任务列表：全部 （ {{tasks.length}} ）</h4>
 				    	<div class="tools clearfix">
@@ -59,19 +67,29 @@
 						    	<button ng-click="selectedAll('zero')">不选</button>
 				    		</div>
 					    	<div class="pull-right" style="margin-right: 15px;">
-					    		<button title="完成" class="btn set-btn pull-right btn-success">
+								
+					    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('complete')" title="完成" class="btn set-btn pull-right btn-success">
 					    			<i class="glyphicon glyphicon-ok"></i>
 					    		</button>
 
-					    		<button title="放入回收站" class="btn set-btn pull-right btn-warning">
+					    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('delete')" title="放入回收站" class="btn set-btn pull-right btn-warning">
 					    			<i class="glyphicon glyphicon-trash"></i>
 					    		</button>
+
+					    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('default')" title="重新打开" class="btn set-btn pull-right btn-primary">
+					    			<i class="glyphicon glyphicon-refresh"></i>
+					    		</button>
+	
+								<button ng-disabled="countNum.selected<=0" ng-click="selectRemove()" title="彻底删除" class="btn set-btn pull-right btn-danger">
+					    			<i class="glyphicon glyphicon-remove"></i>
+					    		</button>
+
 					    	</div>
 					    </div>
 				    	
 				    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
 
-				    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
+				    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect(task._id)">
 
 				    		<span ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
 
@@ -117,6 +135,7 @@
 				    </div>
 
 				    <div class="list-group mt20">
+
 				    	<h4 ng-if="countNum.completed>0">任务列表：已完成 ( {{countNum.completed}} )</h4>
 
 				    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'complete'" ng-repeat="task in tasks track by $index">
@@ -151,9 +170,6 @@
 				    	</a>	    	
 				    </div>
 				</div>
-
-			</div>
-
 
 		</div>
 	
