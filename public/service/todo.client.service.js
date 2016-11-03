@@ -32,10 +32,10 @@ function TaskService($http, $q){
 		getList : function( param ){
 			return handleRequest('GET', '/list', param);
 		},
-		add : function( data, callback ){
+		add : function( data ){
 			return handleRequest('POST', '/add', data);
 		},
-		setStatus : function(data, callback){
+		setStatus : function( data ){
 			return handleRequest('GET', '/set/'+ data.id + '/' + data.status);
 		},
 		remove : function(id){

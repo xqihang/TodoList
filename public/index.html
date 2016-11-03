@@ -3,16 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 <title>FreeLion - 任务系统</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
 <link href="./lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-<style>
-	.mt20{margin-top:20px;}
-	.set-btn{padding: 0 10px;margin: 0 5px;}
-	.msg{padding:15px;margin:10px 0;}
-	.tools{padding:5px 0;border-bottom: 1px solid #ccc;margin-bottom: 10px;}
-</style>
+<link href="./styles/main.css" rel="stylesheet">
 </head>
 <body>
 	<div class="container" ng-controller="taskCtrl">
@@ -21,15 +17,32 @@
 		    <div class="modal-dialog">
 			    <div class="modal-content">
 			    	<div class="modal-header">
-			    		<h4 ng-bind="current.title"></h4>
-			    		<span>任务截止日期： {{formatTime(current.deadline)}}</span>
-			    		<p> <span ng-bind="countTime.d"></span> 天 <span ng-bind="countTime.h"></span> 时 <span ng-bind="countTime.m"></span> 分 <span ng-bind="countTime.s"></span> 秒 </p>
+			    		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			    		<h4>任务: [ <span class="text-primary" ng-bind="current.title"></span> ]</h4>
+			    		<div>任务截止日期： <span ng-bind="formatTime(current.deadline)"></span></div>
 			    	</div>
 			    	<div class="modal-body">
 			    		<p ng-bind="current.content"></p>
 			    	</div>
+			    	<div class="modal-footer">
+			    		<div class="clearfix">
+			    			倒计时： <span class="text-danger" ng-bind="countTime.d"></span> 天 <span class="text-danger" ng-bind="countTime.h"></span> 时 <span class="text-danger" ng-bind="countTime.m"></span> 分 <span class="text-danger" ng-bind="countTime.s"></span> 秒
+			    		</div>
+			    	</div>
 			    </div>
 		    </div>
+		</div>
+
+		<div class="layer-btn glyphicon glyphicon-info-sign" ng-click="showLayer()"></div>
+		<div class="layer-user" ng-if="showlayer">
+			<a href="javascript:;" class="close-layer" ng-click="showLayer()">&times</a>
+			<div class="table-cell">
+				<p>项目名称：TodoList</p>
+				<p>制作者：墨凡（FreeLion）</p>
+				<p>邮箱：xqihangwl@126.com</p>
+				<p>新浪微博：<a class="text-success" href="http://weibo.com/xqihang">@95后小郝</a></p>
+				<p>QQ: 781881021</p>
+			</div>
 		</div>
 
 		<h3 class="text-center msg">任务列表系统</h3>
@@ -43,7 +56,7 @@
 			</div>
 			<div class="col-md-6">
 				<div class="form-group mt20">
-			    	<input ng-model="task.deadline" type="text" class="form-control" placeholder="任务截止日期 格式如： 2015-06-02">
+			    	<input ng-model="task.deadline" type="date" class="form-control" placeholder="任务截止日期">
 			    </div>
 			</div>
 		    <div class="col-md-12">
@@ -58,121 +71,120 @@
 
 
 			<div class="col-md-6">
-					<div class="list-group mt20">
-				    	<h4 ng-if="tasks.length>0">任务列表：全部 （ {{tasks.length}} ）</h4>
-				    	<div class="tools clearfix">
-				    		<div class="pull-left">
-				    			<button ng-click="selectedAll('all')">全选</button>
-						    	<button ng-click="selectedAll('reverse')">反选</button>
-						    	<button ng-click="selectedAll('zero')">不选</button>
-				    		</div>
-					    	<div class="pull-right" style="margin-right: 15px;">
-								
-					    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('complete')" title="完成" class="btn set-btn pull-right btn-success">
-					    			<i class="glyphicon glyphicon-ok"></i>
-					    		</button>
-
-					    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('delete')" title="放入回收站" class="btn set-btn pull-right btn-warning">
-					    			<i class="glyphicon glyphicon-trash"></i>
-					    		</button>
-
-					    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('default')" title="重新打开" class="btn set-btn pull-right btn-primary">
-					    			<i class="glyphicon glyphicon-refresh"></i>
-					    		</button>
-	
-								<button ng-disabled="countNum.selected<=0" ng-click="selectRemove()" title="彻底删除" class="btn set-btn pull-right btn-danger">
-					    			<i class="glyphicon glyphicon-remove"></i>
-					    		</button>
-
-					    	</div>
-					    </div>
-				    	
-				    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
-
-				    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect(task._id)">
-
-				    		<span ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
-
-				    		<button title="完成" class="btn set-btn pull-right btn-success" ng-click="setStatus( {id : task._id, status : 'complete'} )" ng-disabled="task.status != 'default'">
-				    			<i class="glyphicon glyphicon-ok"></i>
-				    		</button>
-
-				    		<button title="放入回收站" class="btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'default'">
-				    			<i class="glyphicon glyphicon-trash"></i>
-				    		</button>
-
-				    		<button title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
-				    			<i class="glyphicon glyphicon-refresh"></i>
-				    		</button>
-
-				    		<!-- <span class="pull-right">{{task.status}}</span> -->
-				    	</a>
-				    </div>
-				</div>
-
-				<div class="col-md-6">
-					<div class="list-group mt20">
-				    	<h4 ng-if="countNum.defaulted>0">任务列表：未完成 ( {{countNum.defaulted}} )</h4>
-				    	
-				    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'default'" ng-repeat="task in tasks track by $index">
-				    		
-				    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
-				    		
-				    		<span ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
-
-				    		<button title="完成" class="btn set-btn pull-right btn-success" ng-click="setStatus( {id : task._id, status : 'complete'} )" ng-disabled="task.status != 'default'">
-				    			<i class="glyphicon glyphicon-ok"></i>
-				    		</button>
-
-				    		<button title="放入回收站" class="btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'default'">
-				    			<i class="glyphicon glyphicon-trash"></i>
-				    		</button>
-
-				    		<button title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
-				    			<i class="glyphicon glyphicon-refresh"></i>
-				    		</button>
-				    	</a>
-				    </div>
-
-				    <div class="list-group mt20">
-
-				    	<h4 ng-if="countNum.completed>0">任务列表：已完成 ( {{countNum.completed}} )</h4>
-
-				    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'complete'" ng-repeat="task in tasks track by $index">
-				    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
-
-				    		<span ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
-
-				    		<button title="放入回收站" class="btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'complete'">
-				    			<i class="glyphicon glyphicon-trash"></i>
-				    		</button>
-
-				    		<button title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
-				    			<i class="glyphicon glyphicon-refresh"></i>
-				    		</button>
-				    	</a>
-				    </div>
-
-				    <div class="list-group mt20">
-				    	<h4 ng-if="countNum.deleted>0">任务列表：回收站 ( {{countNum.deleted}} )</h4>
-				    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'delete'" ng-repeat="task in tasks track by $index">
-							<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
-
-							<span ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
+				<div class="list-group mt20">
+			    	<h4 ng-if="tasks.length>0">任务列表：全部 （ <span ng-bind="tasks.length"></span> ）</h4>
+			    	<div class="hidden-xs tools clearfix">
+			    		<div class="pull-left">
+			    			<button class="btn btn-default btn-sm" ng-click="selectedAll('all')">全选</button>
+					    	<button class="btn btn-default btn-sm" ng-click="selectedAll('reverse')">反选</button>
+					    	<button class="btn btn-default btn-sm" ng-click="selectedAll('zero')">不选</button>
+			    		</div>
+				    	<div class="pull-right" style="margin-right: 15px;">
 							
-				    		<button title="彻底删除" class="btn set-btn pull-right btn-danger" ng-click="remove( task._id )">
+				    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('complete')" title="完成" class="btn set-btn pull-right btn-success">
+				    			<i class="glyphicon glyphicon-ok"></i>
+				    		</button>
+
+				    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('delete')" title="放入回收站" class="btn set-btn pull-right btn-warning">
+				    			<i class="glyphicon glyphicon-trash"></i>
+				    		</button>
+
+				    		<button ng-disabled="countNum.selected<=0" ng-click="setAll('default')" title="重新打开" class="btn set-btn pull-right btn-primary">
+				    			<i class="glyphicon glyphicon-refresh"></i>
+				    		</button>
+
+							<button ng-disabled="countNum.selected<=0" ng-click="selectRemove()" title="彻底删除" class="btn set-btn pull-right btn-danger">
 				    			<i class="glyphicon glyphicon-remove"></i>
 				    		</button>
 
-				    		<button title="重新打开任务" class="btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
-				    			<i class="glyphicon glyphicon-refresh"></i>
-				    		</button>
-				    	</a>	    	
+				    	</div>
 				    </div>
-				</div>
+			    	
+			    	<a href="javascript:;" class="list-group-item" ng-repeat="task in tasks track by $index">
 
+			    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect(task._id)">
+
+			    		<span class="task-title" ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
+
+			    		<button title="完成" class="hidden-xs btn set-btn pull-right btn-success" ng-click="setStatus( {id : task._id, status : 'complete'} )" ng-disabled="task.status != 'default'">
+			    			<i class="glyphicon glyphicon-ok"></i>
+			    		</button>
+
+			    		<button title="放入回收站" class="hidden-xs btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'default'">
+			    			<i class="glyphicon glyphicon-trash"></i>
+			    		</button>
+
+			    		<button title="重新打开任务" class="hidden-xs btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+
+			    		<!-- <span class="pull-right">{{task.status}}</span> -->
+			    	</a>
+			    </div>
+			</div>
+
+			<div class="col-md-6">
+				
+				<div class="list-group mt20">
+			    	<h4 ng-if="countNum.defaulted>0">任务列表：未完成 ( <span ng-bind="countNum.defaulted"></span> )</h4>
+			    	
+			    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'default'" ng-repeat="task in tasks track by $index">
+			    		
+			    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
+			    		
+			    		<span class="task-title" ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
+
+			    		<button title="完成" class="hidden-xs btn set-btn pull-right btn-success" ng-click="setStatus( {id : task._id, status : 'complete'} )" ng-disabled="task.status != 'default'">
+			    			<i class="glyphicon glyphicon-ok"></i>
+			    		</button>
+
+			    		<button title="放入回收站" class="hidden-xs btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'default'">
+			    			<i class="glyphicon glyphicon-trash"></i>
+			    		</button>
+
+			    		<button title="重新打开任务" class="hidden-xs btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+			    	</a>
+			    </div>
+
+			    <div class="list-group mt20">
+
+			    	<h4 ng-if="countNum.completed>0">任务列表：已完成 ( <span ng-bind="countNum.completed"></span> )</h4>
+
+			    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'complete'" ng-repeat="task in tasks track by $index">
+			    		<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
+
+			    		<span class="task-title" ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
+
+			    		<button title="放入回收站" class="hidden-xs btn set-btn pull-right btn-warning" ng-click="setStatus( {id : task._id, status :'delete'} )" ng-disabled="task.status != 'complete'">
+			    			<i class="glyphicon glyphicon-trash"></i>
+			    		</button>
+
+			    		<button title="重新打开任务" class="hidden-xs btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+			    	</a>
+			    </div>
+
+			    <div class="list-group mt20">
+			    	<h4 ng-if="countNum.deleted>0">任务列表：回收站 ( <span ng-bind="countNum.deleted"></span> )</h4>
+			    	<a href="javascript:;" class="list-group-item" ng-if="task.status == 'delete'" ng-repeat="task in tasks track by $index">
+						<input type="checkbox" ng-model="task.checked" ng-checked="task.checked" ng-click="isSelect($event)">
+
+						<span class="task-title" ng-bind="task.title || '没有填写标题。。。'" ng-click="openDetail(task._id)"></span>
+						
+			    		<button title="彻底删除" class="hidden-xs btn set-btn pull-right btn-danger" ng-click="remove( task._id )">
+			    			<i class="glyphicon glyphicon-remove"></i>
+			    		</button>
+
+			    		<button title="重新打开任务" class="hidden-xs btn set-btn pull-right btn-primary" ng-click="setStatus( {id : task._id, status : 'default'} )" ng-if="task.status != 'default'" ng-disabled="task.status == 'default'">
+			    			<i class="glyphicon glyphicon-refresh"></i>
+			    		</button>
+			    	</a>	    	
+			    </div>
+			</div>
 		</div>
-	
 	</div>
 
 	<script src="./lib/angular/angular.js"></script>

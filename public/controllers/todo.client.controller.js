@@ -1,12 +1,18 @@
 angular.module('todoList')
-.controller('taskCtrl',['$scope', '$interval', 'TaskService', TaskController]);
 
-function TaskController($scope, $interval, TaskService){
+.controller('taskCtrl', function($scope, $interval, TaskService){
+
+	$scope.showlayer = false;
+
+	$scope.showLayer = function(){
+		$scope.showlayer = !$scope.showlayer;
+	}
 
 	// 新建任务
 	$scope.task = {
 		title : '',
-		content : ''
+		content : '',
+		deadline : ''
 	};
 	// 全部任务
 	$scope.tasks = [];
@@ -48,14 +54,15 @@ function TaskController($scope, $interval, TaskService){
 		console.log( message );
 	}
 
-	function refreshWin(){
-		window.location.reload();
-	}
-
 	function countDown( nextDate ){
 
 		var now = new Date().getTime();
 		var next = new Date(nextDate).getTime();
+
+		if( next < now ){
+			$scope.countTime = { d : 0, h : 0, m : 0, s : 0 }
+			return false;
+		}
 
 		var t = Math.abs( parseInt( (next - now) / 1000) );
 
@@ -88,34 +95,28 @@ function TaskController($scope, $interval, TaskService){
 	$scope.save = function(){
 
 		// 任务非空
-		if( $scope.task.title == '' || $scope.task.content == '' ){
+		if( $scope.task.title == '' || $scope.task.content == '' || $scope.task.deadline == '' ){
 			msg( 'danger', '所有项目均为必填项...' );
 			return false;
 		}
 
-		var deadline = new Date( $scope.task.deadline );
-
-		if( deadline.getDate() != $scope.task.deadline.substring( $scope.task.deadline.length - 2 ) ){
-			msg( 'danger', '日期格式不正确...' );
-		}
-
 		$scope.Msg = '';
+
+		// 次日凌晨
+		var dealine = new Date( $scope.task.deadline );
+		dealine.setDate( dealine.getDate()+1, 0, 0, 0 );
 
 		var task = {
 			title : $scope.task.title,
 			content : $scope.task.content,
-			deadline : new Date( $scope.task.deadline )
+			deadline : dealine,
+			status : 'default'
 		}
 
 		// 插入数据库
-		TaskService.add( task );
-		// input置为空
-		$scope.task = {
-			title : '',
-			content : ''
-		};
-
-		refreshWin();
+		TaskService.add( task ).then(function(response){
+			$scope.tasks.push( response.res );
+		});
 	}
 
 	// 设置服务器端状态
@@ -145,7 +146,7 @@ function TaskController($scope, $interval, TaskService){
 
 		TaskService.remove( id );
 
-		refreshWin();
+		window.location.reload();
 	};
 
 
@@ -161,7 +162,6 @@ function TaskController($scope, $interval, TaskService){
 				case 'reverse':
 					$scope.tasks[i].checked = !$scope.tasks[i].checked;
 					$scope.countNum.selected = Math.abs($scope.tasks.length - $scope.countNum.selected);
-					console.log($scope.countNum.selected);
 					break;
 				case 'zero':
 					$scope.countNum.selected = 0;
@@ -215,7 +215,7 @@ function TaskController($scope, $interval, TaskService){
 
 	// 格式化日期
 	$scope.formatTime = function(date){
-		var time = moment(date).format('YYYY-MM-DD hh:ss');
+		var time = moment(date).format('YYYY-MM-DD HH:ss');
 		return time;
 	}
 
@@ -257,4 +257,4 @@ function TaskController($scope, $interval, TaskService){
 
 	// 初始化项目列表
 	$scope.getList();
-}
+});
