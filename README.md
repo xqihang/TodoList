@@ -7,6 +7,7 @@
 使用git下载项目并进入目录，执行命令  
 
 **mongod** 启动本地mongodb数据库（前提：已经安装好mongodb）
+
 **node ./bin/www** 来启动服务
 
 

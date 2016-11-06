@@ -1,6 +1,8 @@
 angular.module('todoList')
 
-.controller('taskCtrl', function($scope, $interval, TaskService){
+.controller('taskCtrl', function($scope, $interval, ConfigService, TaskService){
+
+	$scope.config = ConfigService;
 
 	$scope.showlayer = false;
 

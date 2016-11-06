@@ -1,4 +1,7 @@
 angular.module('todoList')
+
+.service('ConfigService',['$http', '$q', ConfigService])
+
 .service('TaskService',['$http', '$q', TaskService]);
 
 
@@ -45,5 +48,61 @@ function TaskService($http, $q){
 			return handleRequest('GET','/show/' + id);
 		}
 	}
+}
 
+function ConfigService(){
+
+	return {
+		lang : 'zh',
+		altText : {
+			appName : {
+				zh : '任务列表系统',
+				en : 'TodoList System'
+			},
+			taskTitle : {
+				zh : '任务标题',
+				en : 'Task Title'
+			},
+			taskDate : {
+				zh : '任务截止日期',
+				en : 'Task deadline Date'
+			},
+			taskContent : {
+				zh : '详细任务介绍',
+				en : 'Task Content Text'
+			},
+			taskList : {
+				zh : '详细列表',
+				en : 'Task List'
+			},
+			delete : {
+				zh : '彻底删除',
+				en : 'Delete this task'
+			},
+			complete : {
+				zh : '完成',
+				en : 'Complete this task'
+			},
+			trash : {
+				zh : '放入垃圾桶',
+				en : 'Add this task to Trash site'
+			},
+			again : {
+				zh : '重新打开任务',
+				en : 'Again this task'
+			},
+			allChoose : {
+				zh : '全选',
+				en : 'All Choose'
+			},
+			inverseChoose : {
+				zh : '反选',
+				en : 'Inverse Choose'
+			},
+			notChoose : {
+				zh : '不选',
+				en : 'Not Choose'
+			}
+		}
+	}
 }
