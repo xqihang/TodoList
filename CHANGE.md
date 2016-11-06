@@ -33,6 +33,7 @@
 * 全选／反选／不选
 * 及时更新视图
 * 任务倒计时
+* 增加语言项 [public/service/todo.client.service.js function --> **ConfigService**]
 
 
 ###未完成的功能
