@@ -1,6 +1,6 @@
 [![TodoList](https://raw.githubusercontent.com/xqihang/TodoList/master/public/uploadfiles/screen_01.png)](http://www.freelion.me)
 
-[![TodoList](https://raw.githubusercontent.com/xqihang/TodoList/master/public/uploadfiles/screen_02.png)](http://www.freelion.me)
+[![TodoList](https://raw.githubusercontent.com/xqihang/TodoList/master/public/uploadfiles/screen_02.jpg)](http://www.freelion.me)
 
 # TodoList System
  
